@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-labelledby="title desc">
+  <title id="title">Rasterift mark</title>
+  <desc id="desc">A restrained Rasterift R monogram with raster reference marks.</desc>
+  <rect width="96" height="96" rx="10" fill="#fbf8ef"/>
+  <rect x="8.5" y="8.5" width="79" height="79" rx="6" fill="none" stroke="#171717" stroke-width="3"/>
+  <path d="M26 73V23h26c12.8 0 21 6.9 21 17.6 0 8.1-4.6 13.9-12.1 16.2L76 73H60.1L46.4 60H39v13H26Zm13-24.7h12.1c5.4 0 8.7-2.7 8.7-7.1s-3.3-7-8.7-7H39v14.1Z" fill="#171717"/>
+  <g fill="#fbf8ef">
+    <rect x="40" y="35" width="5" height="5"/>
+    <rect x="48" y="35" width="5" height="5"/>
+    <rect x="40" y="43" width="5" height="5"/>
+  </g>
+  <g fill="#426f45">
+    <rect x="18" y="79" width="7" height="3"/>
+    <rect x="30" y="79" width="16" height="3"/>
+    <rect x="51" y="79" width="10" height="3"/>
+  </g>
+  <g fill="#9b6b2f">
+    <rect x="66" y="79" width="12" height="3"/>
+    <rect x="17" y="17" width="4" height="4"/>
+    <rect x="25" y="17" width="4" height="4"/>
+  </g>
+</svg>

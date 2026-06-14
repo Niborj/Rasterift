@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 860" preserveAspectRatio="none">
+  <defs>
+    <pattern id="cells" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0H0v32" fill="none" stroke="#9aa8b8" stroke-opacity=".055" stroke-width="1"/>
+      <rect x="7" y="7" width="2" height="2" fill="#77e4f6" fill-opacity=".12"/>
+    </pattern>
+    <linearGradient id="fade" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#77e4f6" stop-opacity=".22"/>
+      <stop offset=".52" stop-color="#9ff5a5" stop-opacity=".12"/>
+      <stop offset="1" stop-color="#e8b665" stop-opacity=".13"/>
+    </linearGradient>
+  </defs>
+  <rect width="1440" height="860" fill="#080a0d"/>
+  <rect width="1440" height="860" fill="url(#cells)"/>
+  <path d="M90 682H398l86-82h232l65-64h250l99-92h214" fill="none" stroke="url(#fade)" stroke-width="2"/>
+  <path d="M140 176h210l58 44h194l50 56h244l42-38h346" fill="none" stroke="#77e4f6" stroke-opacity=".12" stroke-width="1.5"/>
+  <path d="M902 744h-96l-40-42H610l-58-58H326" fill="none" stroke="#e8b665" stroke-opacity=".13" stroke-width="1.5"/>
+  <g fill="#9ff5a5" fill-opacity=".16">
+    <rect x="393" y="595" width="8" height="8"/>
+    <rect x="712" y="530" width="8" height="8"/>
+    <rect x="1027" y="438" width="8" height="8"/>
+    <rect x="346" y="171" width="8" height="8"/>
+    <rect x="598" y="271" width="8" height="8"/>
+    <rect x="895" y="233" width="8" height="8"/>
+  </g>
+  <g fill="#f3f7fb" fill-opacity=".08" font-family="Courier New, monospace" font-size="12">
+    <text x="72" y="126">R  G  B  /  glyph  /  pixel</text>
+    <text x="1034" y="684">zlib delta frame</text>
+    <text x="214" y="758">source-normalized payload</text>
+  </g>
+</svg>

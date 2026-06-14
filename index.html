@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rasterift</title>
+    <link rel="icon" href="/static/assets/rasterift-mark.svg?v=human-redesign" type="image/svg+xml">
+    <link rel="preload" href="/static/assets/rasterift-mark.svg?v=human-redesign" as="image" type="image/svg+xml">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css?v=rasterift-20260613-textured-redesign">
+</head>
+
+<body>
+    <main class="app-shell">
+        <header class="app-header">
+            <div class="brand-lockup">
+                <img class="brand-mark" src="/static/assets/rasterift-mark.svg?v=human-redesign" alt="" width="76" height="76">
+                <div class="brand-copy">
+                    <p class="eyebrow">Live demo</p>
+                    <h1>Rasterift</h1>
+                    <p class="header-subtitle">Turn video into living colour glyphs.</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a class="info-button subtle-link" href="#research">Research</a>
+            </div>
+        </header>
+
+        <section class="studio-layout">
+            <section class="player-stage" aria-label="Video player">
+                <div class="stage-topline">
+                    <div id="status" class="status">System Ready</div>
+                    <div id="active-summary" class="active-summary">No video selected</div>
+                </div>
+
+                <div id="player-container">
+                    <video id="source-video" preload="metadata" playsinline controls></video>
+                    <pre id="ascii-player"></pre>
+                    <canvas id="ascii-canvas"></canvas>
+
+                    <div id="play-overlay">
+                        <div class="play-btn"></div>
+                        <span class="play-label">Play Rasterift</span>
+                    </div>
+                </div>
+
+                <div class="player-controls">
+                    <div class="mode-toggle" aria-label="Playback mode">
+                        <button class="mode-button" type="button" data-mode="original">Rasterift Original</button>
+                        <button class="mode-button active" type="button" data-mode="ascii">Rasterift Glyph</button>
+                        <button class="mode-button" type="button" data-mode="pixel">Rasterift Pixel</button>
+                    </div>
+
+                    <div class="ctrl-group">
+                        <span class="ctrl-icon">Vol</span>
+                        <input id="volume-slider" type="range" min="0" max="1" step="0.05" value="1">
+                    </div>
+                </div>
+
+                <div id="throughput-panel" class="throughput-panel" aria-label="Data throughput">
+                    <div class="throughput-card" data-throughput-card="original">
+                        <span class="throughput-label">Original Source</span>
+                        <strong id="throughput-original" class="throughput-value">--</strong>
+                        <span id="throughput-original-meta" class="throughput-detail">No video selected</span>
+                    </div>
+                    <div class="throughput-card" data-throughput-card="ascii">
+                        <span class="throughput-label">Colour Glyph</span>
+                        <strong id="throughput-ascii" class="throughput-value">--</strong>
+                        <span id="throughput-ascii-meta" class="throughput-detail">No sample yet</span>
+                    </div>
+                    <div class="throughput-card" data-throughput-card="pixel">
+                        <span class="throughput-label">Pixel</span>
+                        <strong id="throughput-pixel" class="throughput-value">--</strong>
+                        <span id="throughput-pixel-meta" class="throughput-detail">No sample yet</span>
+                    </div>
+                </div>
+                <div id="upload-status" class="upload-status">Ready for video</div>
+            </section>
+
+            <aside class="side-panel" aria-label="Video library">
+                <section class="library-panel" aria-label="Video library">
+                    <div class="library-header">
+                        <span class="library-title">Videos</span>
+                        <div class="library-actions">
+                            <span id="library-count">0</span>
+                            <details id="upload-menu" class="upload-menu">
+                                <summary id="upload-button" class="upload-button">Upload</summary>
+                                <div class="upload-menu-panel">
+                                    <input id="video-upload" class="upload-input" type="file" multiple accept="video/mp4,video/webm,video/quicktime,video/x-matroska,video/x-msvideo">
+                                    <label class="upload-choice" for="video-upload">Choose video files</label>
+                                </div>
+                            </details>
+                        </div>
+                    </div>
+                    <div id="video-list" class="video-list"></div>
+                </section>
+            </aside>
+        </section>
+
+        <section class="mode-explainer" aria-label="Rasterift mode guide">
+            <div class="mode-explainer-copy">
+                <p class="eyebrow">Reading the modes</p>
+                <h2>The same clip, handled three ways.</h2>
+                <p>Use the buttons above to compare what the browser receives and what survives on screen. Rasterift exists to make representation cost and inspection boundaries visible, not to replace video codecs.</p>
+            </div>
+            <div class="mode-comparison" role="table" aria-label="Original, Glyph, and Pixel comparison">
+                <div class="mode-row mode-row-head" role="row">
+                    <span role="columnheader">Mode</span>
+                    <span role="columnheader">What it is</span>
+                    <span role="columnheader">Why compare it</span>
+                </div>
+                <div class="mode-row" role="row">
+                    <strong role="cell">Original</strong>
+                    <span role="cell">The source file played as ordinary browser video.</span>
+                    <span role="cell">A baseline for normal playback and compressed file rate.</span>
+                </div>
+                <div class="mode-row" role="row">
+                    <strong role="cell">Glyph</strong>
+                    <span role="cell">Frames sampled into coloured characters.</span>
+                    <span role="cell">Shows how much of the image remains in a text-shaped stream.</span>
+                </div>
+                <div class="mode-row" role="row">
+                    <strong role="cell">Pixel</strong>
+                    <span role="cell">Frames sampled into a reduced colour grid.</span>
+                    <span role="cell">Keeps more visual detail than Glyph, with a larger payload.</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="research" class="research-section" aria-label="Research details">
+            <div class="research-cta">
+                <p>If you thought the demo was cool, click <a href="/static/rasterift-paper.html?v=20260614-paper">here</a> for the research behind it.</p>
+                <div class="research-actions" aria-label="Research links">
+                    <a class="info-button" href="/static/rasterift-paper.pdf?v=20260614-paper">PDF</a>
+                    <button id="technical-trigger" class="info-button" type="button">Technical pipeline</button>
+                    <button id="risk-card" class="info-button risk-link" type="button">Policy risk</button>
+                </div>
+            </div>
+        </section>
+
+        <audio id="ascii-audio" preload="none"></audio>
+    </main>
+
+    <dialog id="technical-modal" class="explainer-modal" aria-labelledby="technical-title">
+        <div class="modal-shell">
+            <button class="modal-close" type="button" data-close-dialog aria-label="Close">Close</button>
+            <p class="eyebrow">Implementation detail</p>
+            <h2 id="technical-title">Rasterift technical pipeline</h2>
+
+            <section class="pipeline-diagrams" aria-label="Technical pipeline diagrams">
+                <div class="pipeline-diagram pipeline-overview">
+                    <header class="diagram-header">
+                        <span class="diagram-kicker">System map</span>
+                        <h3>One source, three transport surfaces</h3>
+                        <p>The selected file is probed once, then routed into a browser-native MP4 path or two Rasterift application streams with their own frame grids, payload formats, clocks, and telemetry.</p>
+                    </header>
+
+                    <div class="signal-map" aria-label="Rasterift mode routing diagram">
+                        <div class="map-node map-source">
+                            <span>Input</span>
+                            <strong>Selected video file</strong>
+                            <small>MP4, WebM, MOV, MKV, AVI</small>
+                        </div>
+
+                        <div class="map-arrow map-arrow-down" aria-hidden="true"></div>
+
+                        <div class="map-node map-probe">
+                            <span>Probe and select</span>
+                            <strong>FastAPI + OpenCV + ffprobe</strong>
+                            <small>codec, duration, FPS, frame count, dimensions, source bytes</small>
+                        </div>
+
+                        <div class="map-rails">
+                            <div class="map-rail rail-original">
+                                <div class="rail-title">
+                                    <span class="rail-dot"></span>
+                                    <strong>Original Source</strong>
+                                </div>
+                                <div class="rail-step">
+                                    <span>Compatibility</span>
+                                    <strong>Direct file or cached H.264/AAC MP4</strong>
+                                    <small>/source resolves browser-safe media</small>
+                                </div>
+                                <div class="rail-step">
+                                    <span>Transport</span>
+                                    <strong>Compressed container stream</strong>
+                                    <small>motion prediction and entropy coding stay intact</small>
+                                </div>
+                                <div class="rail-step rail-output">
+                                    <span>Render</span>
+                                    <strong>Native video element</strong>
+                                    <small>browser decoder, GPU path, media controls</small>
+                                </div>
+                            </div>
+
+                            <div class="map-rail rail-glyph">
+                                <div class="rail-title">
+                                    <span class="rail-dot"></span>
+                                    <strong>Rasterift Glyph</strong>
+                                </div>
+                                <div class="rail-step">
+                                    <span>Grid sample</span>
+                                    <strong>200 x 56 luminance cells</strong>
+                                    <small>aspect-corrected for character geometry</small>
+                                </div>
+                                <div class="rail-step">
+                                    <span>Quantize</span>
+                                <strong>brightness to glyph, source BGR to RGB</strong>
+                                <small>packed char/RGB cells over WebSocket</small>
+                                </div>
+                                <div class="rail-step rail-output">
+                                    <span>Render</span>
+                                    <strong>Canvas plus selectable text layer</strong>
+                                    <small>visual glyphs synchronized to audio</small>
+                                </div>
+                            </div>
+
+                            <div class="map-rail rail-pixel">
+                                <div class="rail-title">
+                                    <span class="rail-dot"></span>
+                                    <strong>Rasterift Pixel</strong>
+                                </div>
+                                <div class="rail-step">
+                                    <span>Grid sample</span>
+                                    <strong>450 x 253 BGR cells</strong>
+                                    <small>reduced raster with square color cells</small>
+                                </div>
+                                <div class="rail-step">
+                                    <span>Encode</span>
+                                    <strong>raw, zlib full, or zlib delta</strong>
+                                    <small>smallest safe WebSocket representation per frame</small>
+                                </div>
+                                <div class="rail-step rail-output">
+                                    <span>Render</span>
+                                    <strong>ImageData canvas</strong>
+                                    <small>BGR to RGBA, then hard-edge scaling</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="map-feedback" aria-label="Timing and telemetry loops">
+                            <div>
+                                <span>Clock</span>
+                                <strong>Audio element is master</strong>
+                                <small>visual queue waits, drops stale frames, and keeps sync</small>
+                            </div>
+                            <div>
+                                <span>Telemetry</span>
+                                <strong>per-source throughput accounting</strong>
+                                <small>raw RGB baseline, MP4 source rate, Glyph and Pixel payload rates</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pipeline-diagram packet-diagram">
+                    <header class="diagram-header">
+                        <span class="diagram-kicker">Wire format</span>
+                        <h3>WebSocket frame anatomy</h3>
+                        <p>Rasterift visual modes ship application frames instead of a normal video codec. Each binary message starts with a stable frame index, then a codec tag that tells the browser how to reconstruct the framebuffer.</p>
+                    </header>
+
+                    <div class="packet-board" aria-label="Binary WebSocket frame layout">
+                        <div class="packet-strip">
+                            <div class="packet-cell packet-index">
+                                <span>4 bytes</span>
+                                <strong>frame_index</strong>
+                                <small>big-endian timeline position</small>
+                            </div>
+                            <div class="packet-cell packet-tag">
+                                <span>1 byte</span>
+                                <strong>tag</strong>
+                                <small>codec selector</small>
+                            </div>
+                            <div class="packet-cell packet-payload">
+                                <span>variable</span>
+                                <strong>payload</strong>
+                                <small>text rows, full framebuffer, or changed cells</small>
+                            </div>
+                        </div>
+
+                        <div class="codec-stack" aria-label="Codec tag meanings">
+                            <div class="codec-card">
+                                <span class="codec-id">0</span>
+                                <div>
+                                    <strong>Raw framebuffer</strong>
+                                    <small>keyframe fallback when compression is not worth it</small>
+                                </div>
+                            </div>
+                            <div class="codec-card">
+                                <span class="codec-id">1</span>
+                                <div>
+                                    <strong>zlib full frame</strong>
+                                    <small>complete compressed cell matrix for easy resync</small>
+                                </div>
+                            </div>
+                            <div class="codec-card">
+                                <span class="codec-id">2</span>
+                                <div>
+                                    <strong>zlib delta frame</strong>
+                                    <small>changed cell indexes plus changed cell values</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pipeline-diagram transform-diagram">
+                    <header class="diagram-header">
+                        <span class="diagram-kicker">Frame transforms</span>
+                        <h3>What actually changes per mode</h3>
+                    </header>
+
+                    <div class="transform-grid" aria-label="Frame transform comparison">
+                        <div class="transform-card transform-raw">
+                            <div class="sample-frame sample-raw" aria-hidden="true"></div>
+                            <span>Raw RGB baseline</span>
+                            <strong>width x height x 3 x FPS</strong>
+                            <small>used only as the uncompressed comparison point for reduction math</small>
+                        </div>
+                        <div class="transform-card transform-glyph">
+                            <div class="sample-frame sample-glyph" aria-hidden="true">
+                                <span>@#%+=-:.</span>
+                                <span>#%+=-:. </span>
+                                <span>%+=-:.  </span>
+                            </div>
+                            <span>Colour Glyph stream</span>
+                            <strong>luma -> glyph, BGR sample -> RGB ink</strong>
+                            <small>each character is tinted from the uploaded video's corresponding cell</small>
+                        </div>
+                        <div class="transform-card transform-pixel">
+                            <div class="sample-frame sample-pixel" aria-hidden="true">
+                                <i></i><i></i><i></i><i></i><i></i><i></i>
+                                <i></i><i></i><i></i><i></i><i></i><i></i>
+                                <i></i><i></i><i></i><i></i><i></i><i></i>
+                            </div>
+                            <span>Pixel stream</span>
+                            <strong>BGR cells -> codec -> RGBA canvas</strong>
+                            <small>preserves color and motion better, but carries more bytes than Glyph</small>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <article class="modal-brief">
+                <h3>Paper framing</h3>
+                <p>Rasterift is a representation-transcoding prototype, measurement study, and defensive security testbed. It does not introduce a DCT, wavelet, residual, or coefficient-domain video syntax. The point of the technical pipeline is to make each representation boundary explicit enough to measure: source container, decoded frame, Glyph grid, Pixel field, zlib payload, WebSocket message, JavaScript decoder state, display queue, canvas output, audio extraction, and telemetry.</p>
+
+                <div class="paper-figure-strip" aria-label="Research paper figures">
+                    <figure>
+                        <img src="/static/figures/figure1_architecture.png" alt="Rasterift architecture from the research paper">
+                        <figcaption>Figure 1: source media moves through storage, decoder workers, Glyph or Pixel transforms, protocol encoding, WebSocket delivery, browser decoding, canvas reconstruction, and separate audio extraction.</figcaption>
+                    </figure>
+                    <figure>
+                        <img src="/static/figures/figure5_baseline_comparison.png" alt="Byte-rate baseline comparison from the research paper">
+                        <figcaption>Figure 5: raw RGB is the large uncompressed baseline; the complete MP4 container remains the lowest measured byte-rate baseline in the six-second study.</figcaption>
+                    </figure>
+                </div>
+
+                <h3>Request and selection model</h3>
+                <p>The browser keeps a compact playback state: selected library id, selected render family, current stream state, volume, frame queue, codec decoder, timing clock, and last measured payload statistics. <code>GET /videos</code> returns every startup and uploaded item with dimensions, FPS, frame count, duration, file size, and a source URL. Selecting a row or mode calls <code>POST /select</code>, where FastAPI resolves the id, updates application state, and builds the queue entry that the next WebSocket connection will consume.</p>
+                <p>The UI has three separate playback surfaces. Original Source uses a native <code>&lt;video&gt;</code> element. Glyph and Pixel hide that element and draw to a canvas from WebSocket frames. The selected mode controls not only rendering, but also grid sizing, codec cell width, audio synchronization, throughput accounting, and which visual layer is visible.</p>
+
+                <h3>Upload and library lifecycle</h3>
+                <p>Uploads are sent as multipart form data to <code>POST /upload</code>. The server normalizes the filename, stores it under <code>uploads/</code>, probes it with OpenCV, rejects unreadable streams, and returns a stable library id. Deletion is restricted to uploaded files through <code>DELETE /videos</code>; startup sources are intentionally protected because they may be part of the demo or benchmark set.</p>
+                <p>Original playback also passes through a compatibility layer. If the selected file is already a conservative browser source, the server returns it directly. If it uses a codec like <code>mp4v</code> that OpenCV can decode but browser video elements may not, <code>/source</code> creates a cached H.264/AAC MP4 keyed by path, size, and modification time. That keeps the Original view faithful to the selected media while avoiding a black browser video surface.</p>
+
+                <h3>OpenCV frame decode and grid sizing</h3>
+                <p>Rasterift Glyph and Rasterift Pixel both start by opening the selected video with OpenCV. The server reads width, height, FPS, and frame count, then derives rows from the requested column count. Glyph compensates for terminal-style character geometry by using fewer rows than a square-pixel grid would require. Pixel treats each cell as a square color sample, so the same source becomes a denser reduced raster.</p>
+                <p>High-FPS inputs are decimated toward a 30 FPS ceiling. The server uses fast <code>grab()</code> calls to skip frames that will not be displayed, then decodes only the frames it needs to transform. The effective FPS is sent in the <code>INIT</code> message so the browser can schedule visual frames against the same timeline.</p>
+
+                <h3>Rasterift Glyph render path</h3>
+                <p>In live Glyph mode, each decoded frame is resized into both a small grayscale matrix and a matching BGR colour grid. Brightness values are quantized into indexes over the mapper lookup table, producing characters that approximate local luminance. The source colour for the same cell is converted from OpenCV BGR into RGB and packed as <code>[char, R, G, B]</code> so the browser can draw each glyph in the correct sampled colour while the invisible text layer preserves selectable character content.</p>
+                <p>The paper's measured 640 x 360 Glyph benchmark used a 200 x 56 grid with per-cell Glyph colour disabled. That monochrome measurement was about 11.26 kB/frame, or about 270 kB/s at 24 FPS. Live Colour Glyph uses the same representation idea but carries RGB ink per cell, so the throughput card measures the selected file directly instead of reusing the monochrome paper number.</p>
+
+                <h3>Pixel render path</h3>
+                <p>Pixel mode uses a direct reduced-raster path instead of glyph selection, streaming BGR color cells. The browser receives three bytes per cell, swaps BGR into RGBA order, writes into an <code>ImageData</code> buffer, and paints that buffer with <code>putImageData</code>. CSS stretches the small canvas to the player while preserving hard pixel edges.</p>
+                <p>The measured demo uses a 450 x 253 Pixel grid. That means a full uncompressed cell frame is much smaller than 640 x 360 raw RGB, but it is still a large application payload. With zlib full-frame compression, the observed mean is about 136.5 kB per visual frame, or about 3.276 MB/s at 24 FPS.</p>
+
+                <h3>Adaptive codec and timing</h3>
+                <p>For binary modes, the WebSocket can use an adaptive codec. Each message carries <code>frame_index</code>, a codec tag, and a payload. Tag 0 is a raw framebuffer, tag 1 is a zlib-compressed full framebuffer, and tag 2 is a zlib-compressed delta made from changed cell indexes plus changed cell values. The encoder picks the smallest safe representation for each frame and forces periodic keyframes for resynchronization.</p>
+                <p>Audio is served separately through <code>/audio</code>, where FFmpeg extracts an MP3 stream from the selected file. In the browser, the audio element becomes the master clock when available. The visual queue buffers frames, drops frames that are too far behind, and waits on frames that arrive early. This keeps the canvas render aligned with sound instead of simply drawing as fast as packets arrive.</p>
+
+                <h3>Throughput measurement model</h3>
+                <p>The throughput cards are source-normalized so they match the paper's accounting boundary. Original Source is measured as selected file bytes divided by source duration. Glyph and Pixel are measured as observed visual payload bytes per frame multiplied by the source FPS. Network framing, TCP/IP overhead, TLS, retransmission, browser cache behavior, initialization messages, and audio bytes are intentionally excluded because the paper measures application visual payload rather than total network capture.</p>
+                <p>This is why the numbers should be read as representation cost, not as a browser download speed test. Original is a compressed MP4 container. Glyph and Pixel are transformed visual streams. Raw RGB is the uncompressed baseline: width times height times three color bytes times FPS. The UI should therefore support the paper's cautious conclusion: reduced raw transport, explicit representation boundaries, and no claim of codec competitiveness.</p>
+            </article>
+        </div>
+    </dialog>
+
+    <dialog id="risk-modal" class="explainer-modal risk-modal" aria-labelledby="risk-title">
+        <div class="modal-shell">
+            <button class="modal-close" type="button" data-close-dialog aria-label="Close">Close</button>
+            <p class="eyebrow">Defensive analysis</p>
+            <h2 id="risk-title">Policy Mismatch Risk</h2>
+
+            <article class="modal-brief risk-brief">
+                <h3>Representation-continuous policy</h3>
+                <p>The paper's central security question is whether source, transformed, compressed, transmitted, reconstructed, and sampled representations receive equivalent security decisions. Rasterift can turn a normal video into decoded frames, Glyph grids, Pixel fields, zlib payloads, WebSocket messages, canvas output, extracted audio, cache artifacts, and telemetry. A control that sees only one artifact may make a different decision from a control that reconstructs the final browser-visible content.</p>
+                <p>This is best understood as potential inspection mismatch. The content is not magic or invisible; it is represented in a different layer. A gateway may classify an upload as an MP4, a server may hold decoded frames, a WebSocket monitor may see compressed payloads, and a browser may reconstruct a canvas image. The paper does not claim a demonstrated DLP or moderation bypass.</p>
+
+                <h3>Threat-model conditions</h3>
+                <p>The manuscript separates local research use, authenticated shared deployment, and internet-facing multi-user deployment. Shared or public use adds requirements for authentication, authorization, origin validation, upload isolation, parser hardening, object-scoped access control, provenance, retention, and deletion semantics for source and derived artifacts.</p>
+                <p>Assets include source media, sensitive visual information, extracted audio, transformed Glyph and Pixel representations, compressed protocol payloads, reconstructed browser output, provenance metadata, user identity, logs, sampled frames, and processing resources. Trust boundaries include browser to HTTP server, browser to WebSocket endpoint, server to storage, server to OpenCV and FFmpeg, protocol decoder to renderer, and application to telemetry.</p>
+
+                <h3>Comparative security characteristics</h3>
+                <p>Rasterift Original remains closest to ordinary browser media delivery. Its risks are familiar: upload handling, media parsing, source-file retention, access control, provenance, audio extraction, and ordinary video misuse. It is also the representation most likely to be understood by existing media-aware controls.</p>
+                <p>Rasterift Glyph creates the largest representational departure from conventional media objects among the evaluated modes. Rasterift Pixel retains more color and spatial samples at the evaluated grid, making it the stronger candidate for future policy-equivalence tests involving screenshots, diagrams, interfaces, and other visually detailed content.</p>
+
+                <h3>Speculative abuse and evidence requirements</h3>
+                <p>A covert-channel scenario is explicitly speculative in the paper. Adversarially chosen glyphs, color-cell perturbations, frame timing, or payload-size modulation could carry secondary information, but the manuscript does not estimate capacity and does not provide an encoder. A real assessment would require steganalysis, capacity measurement, reference decoding, sampled reconstructed frames, and defender-visible telemetry.</p>
+                <p>Claims about commercial DLP, moderation, gateway, endpoint, browser-security, or cloud-security behavior would require authorized testing with product configuration, a labeled corpus, a ground-truth policy definition, captured telemetry, and reproducible evidence.</p>
+
+                <h3>Resource exhaustion and observability</h3>
+                <p>Pixel mode is intentionally heavier than Glyph. At higher column counts, it can generate large WebSocket messages, increased CPU load, browser memory pressure, and GPU/canvas work. Slow clients can build queues; fast producers can waste CPU generating frames that will be dropped. Backpressure, message-size limits, FPS caps, maximum grid dimensions, and session limits are therefore security controls, not only performance optimizations.</p>
+                <p>Useful telemetry includes selected mode, source hash, dimensions, FPS, grid size, payload bytes per frame, codec tag distribution, dropped frames, decode errors, client disconnects, upload provenance, cache hits, and transformed-stream duration. Aggregate network bytes alone are not enough because the same byte volume can represent very different content sensitivity.</p>
+
+                <h3>Governance and mitigation</h3>
+                <p>Defenders should make policy follow information through the whole computation chain: uploaded file, decoded frame, transformed payload, WebSocket message, canvas reconstruction, audio extraction, source cache, retained samples, and logs. Preventive controls should cap resolution, FPS, duration, upload size, grid size, message size, and session count.</p>
+                <p>Derived artifacts should inherit provenance, classification, retention, and deletion obligations from the source unless a documented declassification process says otherwise. Where lawful and proportionate, reference decoders can reconstruct sampled frames for perceptual hashing or classifier inspection, and those samples must themselves be treated as sensitive artifacts.</p>
+            </article>
+        </div>
+    </dialog>
+
+    <script src="/static/codec.js?v=rasterift-20260613-original-playback"></script>
+    <script src="/static/app.js?v=rasterift-20260613-original-playback"></script>
+</body>
+
+</html>

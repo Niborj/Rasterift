@@ -1,0 +1,179 @@
+[
+  {
+    "label": "6s",
+    "source": {
+      "path": "video.mp4",
+      "bytes": 1043908,
+      "width": 640,
+      "height": 360,
+      "fps": 24.0,
+      "frames": 144,
+      "duration_s": 6.0
+    },
+    "raw_rgb": {
+      "bytes_per_frame": 691200,
+      "bytes_per_s": 16588800.0
+    },
+    "source_container_average": {
+      "bytes_per_frame": 7249.361111111111,
+      "bytes_per_s": 173984.66666666666
+    },
+    "glyph": {
+      "frames": 144,
+      "mean_frame_bytes": 11258.236111111111,
+      "median_frame_bytes": 11258.0,
+      "p95_frame_bytes": 11259,
+      "min_frame_bytes": 11257,
+      "max_frame_bytes": 11259,
+      "estimated_payload_bytes_per_s": 270197.6666666667,
+      "total_payload_bytes": 1621186,
+      "mode": "Rasterift Glyph",
+      "cols": 200,
+      "rows": 56,
+      "measurement_runtime_s": 0.17234183300752193,
+      "scope": "application visual payload bytes; audio and network overhead excluded",
+      "reduction_vs_raw_rgb_percent": 98.3712042663323,
+      "multiple_vs_source_container_avg_frame": 1.5529970073991195
+    },
+    "pixel": {
+      "frames": 144,
+      "mean_frame_bytes": 136483.49305555556,
+      "median_frame_bytes": 141370.0,
+      "p95_frame_bytes": 159661,
+      "min_frame_bytes": 63997,
+      "max_frame_bytes": 166033,
+      "estimated_payload_bytes_per_s": 3275603.8333333335,
+      "total_payload_bytes": 19653623,
+      "mode": "Rasterift Pixel",
+      "cols": 450,
+      "rows": 253,
+      "codec_tags": {
+        "raw": 0,
+        "zlib": 144,
+        "delta": 0
+      },
+      "measurement_runtime_s": 0.8014712909935042,
+      "scope": "application visual payload bytes; audio and network overhead excluded",
+      "reduction_vs_raw_rgb_percent": 80.25412426858281,
+      "multiple_vs_source_container_avg_frame": 18.826968468485727
+    }
+  },
+  {
+    "label": "30s_looped",
+    "source": {
+      "path": "measurements/rasterift_30s.mp4",
+      "bytes": 5195908,
+      "width": 640,
+      "height": 360,
+      "fps": 23.925739714771517,
+      "frames": 718,
+      "duration_s": 30.009521484375
+    },
+    "raw_rgb": {
+      "bytes_per_frame": 691200,
+      "bytes_per_s": 16537471.290850073
+    },
+    "source_container_average": {
+      "bytes_per_frame": 7236.640668523677,
+      "bytes_per_s": 173141.98104442764
+    },
+    "glyph": {
+      "frames": 718,
+      "mean_frame_bytes": 11258.84679665738,
+      "median_frame_bytes": 11259.0,
+      "p95_frame_bytes": 11259,
+      "min_frame_bytes": 11257,
+      "max_frame_bytes": 11259,
+      "estimated_payload_bytes_per_s": 269376.23794531357,
+      "total_payload_bytes": 8083852,
+      "mode": "Rasterift Glyph",
+      "cols": 200,
+      "rows": 56,
+      "measurement_runtime_s": 0.8048809579922818,
+      "scope": "application visual payload bytes; audio and network overhead excluded",
+      "reduction_vs_raw_rgb_percent": 98.37111591483546,
+      "multiple_vs_source_container_avg_frame": 1.5558112268346551
+    },
+    "pixel": {
+      "frames": 718,
+      "mean_frame_bytes": 136776.4818941504,
+      "median_frame_bytes": 141986.0,
+      "p95_frame_bytes": 156763,
+      "min_frame_bytes": 67001,
+      "max_frame_bytes": 159080,
+      "estimated_payload_bytes_per_s": 3272478.5049016015,
+      "total_payload_bytes": 98205514,
+      "mode": "Rasterift Pixel",
+      "cols": 450,
+      "rows": 253,
+      "codec_tags": {
+        "raw": 0,
+        "zlib": 718,
+        "delta": 0
+      },
+      "measurement_runtime_s": 3.7699995000002673,
+      "scope": "application visual payload bytes; audio and network overhead excluded",
+      "reduction_vs_raw_rgb_percent": 80.21173583707315,
+      "multiple_vs_source_container_avg_frame": 18.900549047442716
+    }
+  },
+  {
+    "label": "300s_looped",
+    "source": {
+      "path": "measurements/rasterift_300s.mp4",
+      "bytes": 51821421,
+      "width": 640,
+      "height": 360,
+      "fps": 23.90899471186514,
+      "frames": 7173,
+      "duration_s": 300.0126139322917
+    },
+    "raw_rgb": {
+      "bytes_per_frame": 691200,
+      "bytes_per_s": 16525897.144841185
+    },
+    "source_container_average": {
+      "bytes_per_frame": 7224.511501463822,
+      "bytes_per_s": 172730.80728430743
+    },
+    "glyph": {
+      "frames": 7173,
+      "mean_frame_bytes": 11259.845253032205,
+      "median_frame_bytes": 11260,
+      "p95_frame_bytes": 11260,
+      "min_frame_bytes": 11257,
+      "max_frame_bytes": 11260,
+      "estimated_payload_bytes_per_s": 269211.5806111668,
+      "total_payload_bytes": 80766870,
+      "mode": "Rasterift Glyph",
+      "cols": 200,
+      "rows": 56,
+      "measurement_runtime_s": 8.293925791003858,
+      "scope": "application visual payload bytes; audio and network overhead excluded",
+      "reduction_vs_raw_rgb_percent": 98.37097146223492,
+      "multiple_vs_source_container_avg_frame": 1.558561468239167
+    },
+    "pixel": {
+      "frames": 7173,
+      "mean_frame_bytes": 136814.3916074167,
+      "median_frame_bytes": 141986,
+      "p95_frame_bytes": 156763,
+      "min_frame_bytes": 67001,
+      "max_frame_bytes": 159080,
+      "estimated_payload_bytes_per_s": 3271094.5654487726,
+      "total_payload_bytes": 981369631,
+      "mode": "Rasterift Pixel",
+      "cols": 450,
+      "rows": 253,
+      "codec_tags": {
+        "raw": 0,
+        "zlib": 7173,
+        "delta": 0
+      },
+      "measurement_runtime_s": 38.8115827080037,
+      "scope": "application visual payload bytes; audio and network overhead excluded",
+      "reduction_vs_raw_rgb_percent": 80.20625121420476,
+      "multiple_vs_source_container_avg_frame": 18.937528382326686
+    }
+  }
+]

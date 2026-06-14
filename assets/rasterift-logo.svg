@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 120" role="img" aria-labelledby="title desc">
+  <title id="title">Rasterift logo</title>
+  <desc id="desc">Rasterift wordmark with a rasterized R symbol.</desc>
+  <defs>
+    <linearGradient id="markField" x1="10" y1="16" x2="106" y2="104" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#35d5ff"/>
+      <stop offset=".5" stop-color="#7dff92"/>
+      <stop offset="1" stop-color="#f5b85b"/>
+    </linearGradient>
+    <linearGradient id="word" x1="128" y1="30" x2="384" y2="82" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#eef2f6"/>
+      <stop offset=".58" stop-color="#dff8ff"/>
+      <stop offset="1" stop-color="#7dff92"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="112" height="112" rx="26" fill="#08090c"/>
+  <rect x="14" y="14" width="92" height="92" rx="22" fill="#10131a" stroke="#35d5ff" stroke-width="1.4"/>
+  <path d="M30 84V30h29c15.6 0 25.4 8.3 25.4 21.1 0 9.6-5.4 16.3-14.1 19.2L88.7 84H70.1L53.7 71.5H46.1V84H30Zm16.1-28h12.1c6.1 0 9.6-3 9.6-7.7 0-4.8-3.5-7.8-9.6-7.8H46.1V56Z" fill="url(#markField)"/>
+  <g fill="#eef2f6" opacity=".92">
+    <rect x="34" y="32" width="4.6" height="4.6" rx="1"/>
+    <rect x="41" y="32" width="4.6" height="4.6" rx="1"/>
+    <rect x="34" y="39" width="4.6" height="4.6" rx="1"/>
+    <rect x="55" y="46" width="4.6" height="4.6" rx="1"/>
+    <rect x="62" y="46" width="4.6" height="4.6" rx="1"/>
+    <rect x="48" y="60" width="4.6" height="4.6" rx="1"/>
+    <rect x="69" y="74" width="4.6" height="4.6" rx="1"/>
+  </g>
+  <text x="136" y="67" fill="url(#word)" font-family="Courier New, monospace" font-size="46" font-weight="700" letter-spacing="0">RASTERIFT</text>
+  <text x="139" y="91" fill="#8d96a6" font-family="Courier New, monospace" font-size="12" letter-spacing="2">VIDEO TO GLYPH AND PIXEL STREAMS</text>
+</svg>
