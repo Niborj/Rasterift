@@ -8,3 +8,11 @@ services:
     envVars:
       - key: RASTERIFT_DATA_DIR
         value: /data
+      - key: RASTERIFT_CODEC_QUALITY
+        value: high
+      - key: RASTERIFT_MAX_FPS
+        value: "24"
+      - key: RASTERIFT_MAX_TEXT_CELLS
+        value: "12000"
+      - key: RASTERIFT_MAX_PIXEL_CELLS
+        value: "60000"

@@ -13,6 +13,7 @@ Priority Order:
 import asyncio
 import subprocess
 import json
+import math
 import re
 import uuid
 import hashlib
@@ -109,6 +110,9 @@ def initialize_app_state(
     vol: int = 1,
     pixel: bool = False,
     ui_render_mode: str | None = None,
+    max_fps: float = 30,
+    max_text_cells: int | None = None,
+    max_pixel_cells: int | None = None,
 ) -> list[dict]:
     """
     Populate app.state for either the interactive CLI or the production entrypoint.
@@ -131,6 +135,9 @@ def initialize_app_state(
     app.state.default_pixel = pixel
     app.state.default_text_cols = cols if cols is not None else 200
     app.state.default_pixel_cols = cols if cols is not None else 450
+    app.state.max_fps = max_fps
+    app.state.max_text_cells = max_text_cells
+    app.state.max_pixel_cells = max_pixel_cells
     app.state.active_video_id = "startup:0" if playback_queue else None
     app.state.ui_render_mode = ui_render_mode or ("pixel" if pixel else "ascii")
     app.state.data_dir = str(DATA_DIR)
@@ -357,9 +364,8 @@ def resolve_library_video(video_id: str) -> str:
 
 
 def entry_for_video(path: str, mode: str) -> dict:
-    text_cols = getattr(app.state, "default_text_cols", 200)
-    pixel_cols = getattr(app.state, "default_pixel_cols", 450)
     vol = getattr(app.state, "default_vol", 1)
+    cols, rows = grid_for_video(path, mode == "pixel")
 
     if mode == "pixel":
         return {
@@ -367,8 +373,8 @@ def entry_for_video(path: str, mode: str) -> dict:
             "mode": 5,
             "vol": vol,
             "pixel": True,
-            "cols": pixel_cols,
-            "rows": getattr(app.state, "rows", 0),
+            "cols": cols,
+            "rows": rows,
         }
 
     return {
@@ -379,9 +385,43 @@ def entry_for_video(path: str, mode: str) -> dict:
         "mode": 5,
         "vol": vol,
         "pixel": False,
-        "cols": text_cols,
-        "rows": getattr(app.state, "rows", 0),
+        "cols": cols,
+        "rows": rows,
     }
+
+
+def grid_for_video(path: str, pixel_mode: bool) -> tuple[int, int]:
+    """Return a grid size, applying optional production cell-budget caps."""
+    cols = getattr(app.state, "default_pixel_cols" if pixel_mode else "default_text_cols", 450 if pixel_mode else 200)
+    rows_cfg = getattr(app.state, "rows", 0)
+    max_cells = getattr(app.state, "max_pixel_cells" if pixel_mode else "max_text_cells", None)
+
+    if rows_cfg > 0 or not max_cells:
+        return cols, rows_cfg
+
+    try:
+        vid_w, vid_h = get_video_dimensions(path)
+    except FileNotFoundError:
+        return cols, rows_cfg
+
+    rows = calc_auto_rows(cols, vid_w, vid_h, pixel_mode)
+    cells = cols * rows
+    if cells <= max_cells:
+        return cols, rows_cfg
+
+    aspect = vid_w / max(vid_h, 1)
+    if pixel_mode:
+        capped_cols = math.floor(math.sqrt(max_cells * aspect))
+    else:
+        capped_cols = math.floor(math.sqrt(max_cells * aspect * 2))
+
+    cols = max(24, min(cols, capped_cols))
+    rows = calc_auto_rows(cols, vid_w, vid_h, pixel_mode)
+    while cols > 24 and cols * rows > max_cells:
+        cols -= 1
+        rows = calc_auto_rows(cols, vid_w, vid_h, pixel_mode)
+
+    return cols, rows
 
 
 def select_library_video(video_id: str, mode: str) -> dict:
@@ -759,15 +799,15 @@ async def websocket_endpoint(websocket: WebSocket):
 
             mapper       = AsciiMapper()
             source_fps   = decoder.fps
-            MAX_FPS      = 30
+            max_fps      = float(getattr(app.state, "max_fps", 30) or 30)
             char_byte_lut= np.array([ord(c) for c in mapper._lut], dtype=np.uint8)
             qb           = {5: 0, 4: 2, 3: 3, 2: 5}.get(render_mode, 0)
 
             # ── FPS DECIMATION ──
-            # If source > 30 FPS, skip every Nth frame using grab() (no decode).
+            # If source exceeds the configured cap, skip every Nth frame using grab() (no decode).
             # This halves CPU load for 60 FPS sources.
-            if source_fps > MAX_FPS:
-                skip_n = round(source_fps / MAX_FPS)  # e.g. 60/30 = 2
+            if source_fps > max_fps:
+                skip_n = max(1, round(source_fps / max_fps))  # e.g. 60/30 = 2
                 effective_fps = source_fps / skip_n
             else:
                 skip_n = 1

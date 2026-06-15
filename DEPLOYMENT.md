@@ -56,6 +56,33 @@ Expected health response:
 
 Optional: set `RASTERIFT_DEFAULT_VIDEO` to a path inside the image or mounted data directory if you want Rasterift to pre-load a default source video. Leave it unset for the normal Render upload-first flow.
 
+## Production Playback Tuning
+
+Glyph and Pixel modes are live server transforms. On Render, keep production defaults bounded with these environment variables:
+
+```text
+RASTERIFT_CODEC_QUALITY=high
+RASTERIFT_MAX_FPS=24
+RASTERIFT_MAX_TEXT_CELLS=12000
+RASTERIFT_MAX_PIXEL_CELLS=60000
+```
+
+These caps matter most for portrait videos. A 1080 x 1920 clip at the local Pixel default would become a 450 x 800 grid, which is 360,000 color cells per frame. The production cell budget scales that down before streaming so playback can stay close to real time.
+
+To improve quality on a larger Render instance, raise the cell budgets gradually:
+
+```text
+RASTERIFT_MAX_TEXT_CELLS=18000
+RASTERIFT_MAX_PIXEL_CELLS=90000
+```
+
+To improve smoothness on a smaller instance, lower them:
+
+```text
+RASTERIFT_MAX_TEXT_CELLS=8000
+RASTERIFT_MAX_PIXEL_CELLS=40000
+```
+
 Render will build from `Dockerfile`, install FFmpeg and OpenCV runtime libraries, install `requirements.txt`, and start the container with:
 
 ```bash
