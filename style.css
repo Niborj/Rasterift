@@ -4428,3 +4428,28 @@ body::after {
 #risk-modal .risk-brief h3 {
     color: #171717;
 }
+
+#technical-modal .map-feedback > div,
+#technical-modal .codec-card,
+#technical-modal .sample-frame {
+    border-color: #b8aa96;
+    background: #f6f1e7;
+}
+
+#technical-modal .packet-payload {
+    background:
+        repeating-linear-gradient(90deg, rgba(85, 72, 57, 0.06) 0 10px, transparent 10px 20px),
+        #f6f1e7;
+}
+
+#technical-modal .sample-glyph {
+    color: #171717;
+    background:
+        radial-gradient(circle at 18% 22%, rgba(125, 255, 146, 0.16), transparent 32%),
+        #f6f1e7;
+    text-shadow: none;
+}
+
+#technical-modal .sample-pixel {
+    background: #171717;
+}
