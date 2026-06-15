@@ -153,14 +153,14 @@
                     <header class="diagram-header">
                         <span class="diagram-kicker">System map</span>
                         <h3>One source, three transport surfaces</h3>
-                        <p>The selected file is probed once, then routed into a browser-native MP4 path or two Rasterift application streams with their own frame grids, payload formats, clocks, and telemetry.</p>
+                        <p>The deployed app starts with a bundled demo video and also accepts uploads. Each selected file is probed once, then routed into browser-native Original playback or into live Glyph and Pixel WebSocket streams with production-safe grid budgets, audio sync, and telemetry.</p>
                     </header>
 
                     <div class="signal-map" aria-label="Rasterift mode routing diagram">
                         <div class="map-node map-source">
                             <span>Input</span>
                             <strong>Selected video file</strong>
-                            <small>MP4, WebM, MOV, MKV, AVI</small>
+                            <small>Bundled video.mp4 or uploaded MP4, WebM, MOV, MKV, AVI</small>
                         </div>
 
                         <div class="map-arrow map-arrow-down" aria-hidden="true"></div>
@@ -168,7 +168,7 @@
                         <div class="map-node map-probe">
                             <span>Probe and select</span>
                             <strong>FastAPI + OpenCV + ffprobe</strong>
-                            <small>codec, duration, FPS, frame count, dimensions, source bytes</small>
+                            <small>codec, duration, FPS, dimensions, source bytes, and Render cell-budget caps</small>
                         </div>
 
                         <div class="map-rails">
@@ -201,8 +201,8 @@
                                 </div>
                                 <div class="rail-step">
                                     <span>Grid sample</span>
-                                    <strong>200 x 56 luminance cells</strong>
-                                    <small>aspect-corrected for character geometry</small>
+                                    <strong>adaptive luminance glyph grid</strong>
+                                    <small>aspect-corrected for character geometry; capped in production for large uploads</small>
                                 </div>
                                 <div class="rail-step">
                                     <span>Quantize</span>
@@ -212,7 +212,7 @@
                                 <div class="rail-step rail-output">
                                     <span>Render</span>
                                     <strong>Canvas plus selectable text layer</strong>
-                                    <small>visual glyphs synchronized to audio</small>
+                                    <small>visual glyphs synchronized to click-primed extracted audio</small>
                                 </div>
                             </div>
 
@@ -223,13 +223,13 @@
                                 </div>
                                 <div class="rail-step">
                                     <span>Grid sample</span>
-                                    <strong>450 x 253 BGR cells</strong>
-                                    <small>reduced raster with square color cells</small>
+                                    <strong>adaptive BGR cell grid</strong>
+                                    <small>square color cells with Render caps to avoid oversized portrait streams</small>
                                 </div>
                                 <div class="rail-step">
                                     <span>Encode</span>
                                     <strong>raw, zlib full, or zlib delta</strong>
-                                    <small>smallest safe WebSocket representation per frame</small>
+                                    <small>smallest practical WebSocket representation per frame</small>
                                 </div>
                                 <div class="rail-step rail-output">
                                     <span>Render</span>
@@ -243,7 +243,7 @@
                             <div>
                                 <span>Clock</span>
                                 <strong>Audio element is master</strong>
-                                <small>visual queue waits, drops stale frames, and keeps sync</small>
+                                <small>audio starts from the user's play click; visuals wait, catch up, and stay in sync</small>
                             </div>
                             <div>
                                 <span>Telemetry</span>
@@ -344,13 +344,13 @@
             </section>
 
             <article class="modal-brief">
-                <h3>Paper framing</h3>
-                <p>Rasterift is a representation-transcoding prototype, measurement study, and defensive security testbed. It does not introduce a DCT, wavelet, residual, or coefficient-domain video syntax. The point of the technical pipeline is to make each representation boundary explicit enough to measure: source container, decoded frame, Glyph grid, Pixel field, zlib payload, WebSocket message, JavaScript decoder state, display queue, canvas output, audio extraction, and telemetry.</p>
+                <h3>Current product framing</h3>
+                <p>Rasterift is now a hosted FastAPI demo with a bundled default video, upload support, Original/Glyph/Pixel playback, WebSocket transformed streams, FFmpeg audio extraction, and production grid caps for Render. It still does not introduce a DCT, wavelet, residual, or coefficient-domain video syntax. The point of the pipeline is to expose each representation boundary: source container, decoded frame, Glyph grid, Pixel field, adaptive payload, WebSocket message, JavaScript decoder state, display queue, canvas output, audio extraction, cached browser source, and telemetry.</p>
 
                 <div class="paper-figure-strip" aria-label="Research paper figures">
                     <figure>
                         <img src="/static/figures/figure1_architecture.png" alt="Rasterift architecture from the research paper">
-                        <figcaption>Figure 1: source media moves through storage, decoder workers, Glyph or Pixel transforms, protocol encoding, WebSocket delivery, browser decoding, canvas reconstruction, and separate audio extraction.</figcaption>
+                        <figcaption>Figure 1: source media moves through storage, OpenCV decode, Glyph or Pixel transforms, protocol encoding, WebSocket delivery, browser decoding, canvas reconstruction, and separate FFmpeg audio extraction.</figcaption>
                     </figure>
                     <figure>
                         <img src="/static/figures/figure5_baseline_comparison.png" alt="Byte-rate baseline comparison from the research paper">
@@ -359,28 +359,28 @@
                 </div>
 
                 <h3>Request and selection model</h3>
-                <p>The browser keeps a compact playback state: selected library id, selected render family, current stream state, volume, frame queue, codec decoder, timing clock, and last measured payload statistics. <code>GET /videos</code> returns every startup and uploaded item with dimensions, FPS, frame count, duration, file size, and a source URL. Selecting a row or mode calls <code>POST /select</code>, where FastAPI resolves the id, updates application state, and builds the queue entry that the next WebSocket connection will consume.</p>
+                <p>The browser keeps a compact playback state: selected library id, selected render family, current stream state, volume, frame queue, codec decoder, timing clock, and measured payload statistics. <code>GET /videos</code> returns the bundled startup video plus any uploaded items with dimensions, FPS, frame count, duration, file size, and a source URL. Selecting a row or mode calls <code>POST /select</code>, where FastAPI resolves the id, updates application state, and builds the queue entry that the next WebSocket connection will consume.</p>
                 <p>The UI has three separate playback surfaces. Original Source uses a native <code>&lt;video&gt;</code> element. Glyph and Pixel hide that element and draw to a canvas from WebSocket frames. The selected mode controls not only rendering, but also grid sizing, codec cell width, audio synchronization, throughput accounting, and which visual layer is visible.</p>
 
                 <h3>Upload and library lifecycle</h3>
-                <p>Uploads are sent as multipart form data to <code>POST /upload</code>. The server normalizes the filename, stores it under <code>uploads/</code>, probes it with OpenCV, rejects unreadable streams, and returns a stable library id. Deletion is restricted to uploaded files through <code>DELETE /videos</code>; startup sources are intentionally protected because they may be part of the demo or benchmark set.</p>
-                <p>Original playback also passes through a compatibility layer. If the selected file is already a conservative browser source, the server returns it directly. If it uses a codec like <code>mp4v</code> that OpenCV can decode but browser video elements may not, <code>/source</code> creates a cached H.264/AAC MP4 keyed by path, size, and modification time. That keeps the Original view faithful to the selected media while avoiding a black browser video surface.</p>
+                <p>Uploads are sent as multipart form data to <code>POST /upload</code>. The server normalizes the filename, stores it under <code>RASTERIFT_DATA_DIR/uploads</code>, probes it with OpenCV, rejects unreadable streams, and returns a stable library id. Deletion is restricted to uploaded files through <code>DELETE /videos</code>; the bundled startup source is protected so the public demo always has something to play.</p>
+                <p>Original playback also passes through a compatibility layer. If the selected file is already a conservative browser source, the server returns it directly. If it uses a codec that OpenCV can decode but browser video elements may not, <code>/source</code> creates a cached H.264/AAC MP4 under <code>RASTERIFT_DATA_DIR/source_cache</code>, keyed by path, size, and modification time. On Render, durable uploads require a persistent disk mounted at <code>/data</code>; otherwise upload storage is reset when the service restarts or redeploys.</p>
 
                 <h3>OpenCV frame decode and grid sizing</h3>
-                <p>Rasterift Glyph and Rasterift Pixel both start by opening the selected video with OpenCV. The server reads width, height, FPS, and frame count, then derives rows from the requested column count. Glyph compensates for terminal-style character geometry by using fewer rows than a square-pixel grid would require. Pixel treats each cell as a square color sample, so the same source becomes a denser reduced raster.</p>
-                <p>High-FPS inputs are decimated toward a 30 FPS ceiling. The server uses fast <code>grab()</code> calls to skip frames that will not be displayed, then decodes only the frames it needs to transform. The effective FPS is sent in the <code>INIT</code> message so the browser can schedule visual frames against the same timeline.</p>
+                <p>Rasterift Glyph and Rasterift Pixel both start by opening the selected video with OpenCV. The server reads width, height, FPS, and frame count, then derives rows from the column count and aspect ratio. Glyph compensates for character geometry by using fewer rows than a square-pixel grid would require. Pixel treats each cell as a square color sample, so the same source becomes a denser reduced raster.</p>
+                <p>Local CLI runs keep the original higher-resolution defaults. The hosted Render entry point applies production budgets: a 24 FPS cap, a Glyph cell budget, and a Pixel cell budget. That keeps square and portrait uploads from expanding into very large transformed streams while preserving the Original, Glyph, and Pixel comparison.</p>
 
                 <h3>Rasterift Glyph render path</h3>
-                <p>In live Glyph mode, each decoded frame is resized into both a small grayscale matrix and a matching BGR colour grid. Brightness values are quantized into indexes over the mapper lookup table, producing characters that approximate local luminance. The source colour for the same cell is converted from OpenCV BGR into RGB and packed as <code>[char, R, G, B]</code> so the browser can draw each glyph in the correct sampled colour while the invisible text layer preserves selectable character content.</p>
-                <p>The paper's measured 640 x 360 Glyph benchmark used a 200 x 56 grid with per-cell Glyph colour disabled. That monochrome measurement was about 11.26 kB/frame, or about 270 kB/s at 24 FPS. Live Colour Glyph uses the same representation idea but carries RGB ink per cell, so the throughput card measures the selected file directly instead of reusing the monochrome paper number.</p>
+                <p>In live Glyph mode, each decoded frame is resized into both a small grayscale matrix and a matching BGR colour grid. Brightness values are quantized into mapper lookup indexes, producing characters that approximate local luminance. The source colour for the same cell is converted from OpenCV BGR into RGB and packed as <code>[char, R, G, B]</code> so the browser can draw each glyph in the correct sampled colour while the invisible text layer preserves selectable character content.</p>
+                <p>The paper's measured Glyph benchmark remains useful context, but the hosted product measures the selected file directly. Live Colour Glyph carries RGB ink per cell and may use a smaller production grid than local CLI defaults, so the throughput card reports the current stream rather than a fixed benchmark number.</p>
 
                 <h3>Pixel render path</h3>
                 <p>Pixel mode uses a direct reduced-raster path instead of glyph selection, streaming BGR color cells. The browser receives three bytes per cell, swaps BGR into RGBA order, writes into an <code>ImageData</code> buffer, and paints that buffer with <code>putImageData</code>. CSS stretches the small canvas to the player while preserving hard pixel edges.</p>
-                <p>The measured demo uses a 450 x 253 Pixel grid. That means a full uncompressed cell frame is much smaller than 640 x 360 raw RGB, but it is still a large application payload. With zlib full-frame compression, the observed mean is about 136.5 kB per visual frame, or about 3.276 MB/s at 24 FPS.</p>
+                <p>Pixel intentionally carries more visual detail than Glyph, so it is capped more aggressively in hosted production. The local default can still use a 450-column grid, but Render scales large uploads to the configured cell budget so Pixel remains playable for visitors.</p>
 
                 <h3>Adaptive codec and timing</h3>
-                <p>For binary modes, the WebSocket can use an adaptive codec. Each message carries <code>frame_index</code>, a codec tag, and a payload. Tag 0 is a raw framebuffer, tag 1 is a zlib-compressed full framebuffer, and tag 2 is a zlib-compressed delta made from changed cell indexes plus changed cell values. The encoder picks the smallest safe representation for each frame and forces periodic keyframes for resynchronization.</p>
-                <p>Audio is served separately through <code>/audio</code>, where FFmpeg extracts an MP3 stream from the selected file. In the browser, the audio element becomes the master clock when available. The visual queue buffers frames, drops frames that are too far behind, and waits on frames that arrive early. This keeps the canvas render aligned with sound instead of simply drawing as fast as packets arrive.</p>
+                <p>For binary modes, the WebSocket uses an adaptive codec. Each message carries <code>frame_index</code>, a codec tag, and a payload. Tag 0 is a raw framebuffer, tag 1 is a zlib-compressed full framebuffer, and tag 2 is a zlib-compressed delta made from changed cell indexes plus changed cell values. The encoder picks the smallest practical representation for each frame and forces periodic keyframes for resynchronization.</p>
+                <p>Audio is served separately through <code>/audio</code>, where FFmpeg extracts an MP3 stream from the selected file. The client now primes that audio from the user's play click before the transformed WebSocket stream starts, which avoids browser autoplay blocks for Glyph and Pixel. When audio is available, it becomes the master clock: the visual queue buffers frames, drops frames that are too far behind, and waits on frames that arrive early.</p>
 
                 <h3>Throughput measurement model</h3>
                 <p>The throughput cards are source-normalized so they match the paper's accounting boundary. Original Source is measured as selected file bytes divided by source duration. Glyph and Pixel are measured as observed visual payload bytes per frame multiplied by the source FPS. Network framing, TCP/IP overhead, TLS, retransmission, browser cache behavior, initialization messages, and audio bytes are intentionally excluded because the paper measures application visual payload rather than total network capture.</p>
@@ -396,29 +396,25 @@
             <h2 id="risk-title">Policy Mismatch Risk</h2>
 
             <article class="modal-brief risk-brief">
+                <h3>Current deployment boundary</h3>
+                <p>The public Rasterift service is a live media transformation demo, not a hardened content-hosting platform. It ships with a bundled default video so visitors can inspect the modes immediately, and it allows temporary uploads so users can compare their own files. Uploaded videos, generated browser-compatible source files, extracted audio streams, transformed WebSocket payloads, and browser canvas output are all derived representations of the selected source.</p>
+                <p>On Render, uploads are stored under <code>/data/uploads</code>. They persist only when the service has a persistent disk mounted at <code>/data</code>; otherwise they can disappear after redeploys or restarts. The UI now recovers from missing uploads by refreshing the library and asking for a re-upload instead of keeping stale video ids.</p>
+
                 <h3>Representation-continuous policy</h3>
-                <p>The paper's central security question is whether source, transformed, compressed, transmitted, reconstructed, and sampled representations receive equivalent security decisions. Rasterift can turn a normal video into decoded frames, Glyph grids, Pixel fields, zlib payloads, WebSocket messages, canvas output, extracted audio, cache artifacts, and telemetry. A control that sees only one artifact may make a different decision from a control that reconstructs the final browser-visible content.</p>
-                <p>This is best understood as potential inspection mismatch. The content is not magic or invisible; it is represented in a different layer. A gateway may classify an upload as an MP4, a server may hold decoded frames, a WebSocket monitor may see compressed payloads, and a browser may reconstruct a canvas image. The paper does not claim a demonstrated DLP or moderation bypass.</p>
+                <p>The policy risk remains inspection mismatch: different controls may observe different representations of the same content. A gateway may see a source MP4, the server may decode frames through OpenCV, the transformed modes may send zlib-compressed WebSocket payloads, and the browser may reconstruct a canvas image synchronized with separately extracted audio.</p>
+                <p>This does not mean the content is hidden, magical, or proven to bypass commercial controls. It means policy and observability should follow the information across the full chain: source upload, decoded frame, transformed payload, WebSocket message, canvas reconstruction, source cache, audio stream, logs, and deletion lifecycle.</p>
 
-                <h3>Threat-model conditions</h3>
-                <p>The manuscript separates local research use, authenticated shared deployment, and internet-facing multi-user deployment. Shared or public use adds requirements for authentication, authorization, origin validation, upload isolation, parser hardening, object-scoped access control, provenance, retention, and deletion semantics for source and derived artifacts.</p>
-                <p>Assets include source media, sensitive visual information, extracted audio, transformed Glyph and Pixel representations, compressed protocol payloads, reconstructed browser output, provenance metadata, user identity, logs, sampled frames, and processing resources. Trust boundaries include browser to HTTP server, browser to WebSocket endpoint, server to storage, server to OpenCV and FFmpeg, protocol decoder to renderer, and application to telemetry.</p>
+                <h3>Public-demo controls</h3>
+                <p>The current hosted product has production safety caps for transformed playback: FPS, Glyph cell budget, and Pixel cell budget. Those caps reduce resource exhaustion risk and keep large portrait uploads from expanding into huge Pixel streams. They are performance controls, but they are also security controls because they bound CPU, memory, message size, and browser rendering work.</p>
+                <p>The default source is bundled and protected from deletion. User uploads can be deleted from the UI. Startup sources and uploaded sources are deliberately separated so the demo always remains usable while still giving users a way to remove their own temporary files from the running service.</p>
 
-                <h3>Comparative security characteristics</h3>
-                <p>Rasterift Original remains closest to ordinary browser media delivery. Its risks are familiar: upload handling, media parsing, source-file retention, access control, provenance, audio extraction, and ordinary video misuse. It is also the representation most likely to be understood by existing media-aware controls.</p>
-                <p>Rasterift Glyph creates the largest representational departure from conventional media objects among the evaluated modes. Rasterift Pixel retains more color and spatial samples at the evaluated grid, making it the stronger candidate for future policy-equivalence tests involving screenshots, diagrams, interfaces, and other visually detailed content.</p>
+                <h3>What remains out of scope</h3>
+                <p>Rasterift does not currently provide accounts, per-user access control, malware scanning, moderation decisions, content classification, or long-term audit workflows. If it becomes a shared or authenticated product, it needs origin validation, upload isolation, object-scoped authorization, provenance tracking, retention rules, deletion guarantees, and operational logging before it should hold sensitive media.</p>
+                <p>Claims about DLP, moderation, gateway, endpoint, browser-security, or cloud-security behavior still require authorized testing with product configuration, a labeled corpus, a ground-truth policy definition, captured telemetry, and reproducible evidence. The demo should be read as a representation-boundary tool, not as evidence of a named product bypass.</p>
 
-                <h3>Speculative abuse and evidence requirements</h3>
-                <p>A covert-channel scenario is explicitly speculative in the paper. Adversarially chosen glyphs, color-cell perturbations, frame timing, or payload-size modulation could carry secondary information, but the manuscript does not estimate capacity and does not provide an encoder. A real assessment would require steganalysis, capacity measurement, reference decoding, sampled reconstructed frames, and defender-visible telemetry.</p>
-                <p>Claims about commercial DLP, moderation, gateway, endpoint, browser-security, or cloud-security behavior would require authorized testing with product configuration, a labeled corpus, a ground-truth policy definition, captured telemetry, and reproducible evidence.</p>
-
-                <h3>Resource exhaustion and observability</h3>
-                <p>Pixel mode is intentionally heavier than Glyph. At higher column counts, it can generate large WebSocket messages, increased CPU load, browser memory pressure, and GPU/canvas work. Slow clients can build queues; fast producers can waste CPU generating frames that will be dropped. Backpressure, message-size limits, FPS caps, maximum grid dimensions, and session limits are therefore security controls, not only performance optimizations.</p>
-                <p>Useful telemetry includes selected mode, source hash, dimensions, FPS, grid size, payload bytes per frame, codec tag distribution, dropped frames, decode errors, client disconnects, upload provenance, cache hits, and transformed-stream duration. Aggregate network bytes alone are not enough because the same byte volume can represent very different content sensitivity.</p>
-
-                <h3>Governance and mitigation</h3>
-                <p>Defenders should make policy follow information through the whole computation chain: uploaded file, decoded frame, transformed payload, WebSocket message, canvas reconstruction, audio extraction, source cache, retained samples, and logs. Preventive controls should cap resolution, FPS, duration, upload size, grid size, message size, and session count.</p>
-                <p>Derived artifacts should inherit provenance, classification, retention, and deletion obligations from the source unless a documented declassification process says otherwise. Where lawful and proportionate, reference decoders can reconstruct sampled frames for perceptual hashing or classifier inspection, and those samples must themselves be treated as sensitive artifacts.</p>
+                <h3>Recommended operating posture</h3>
+                <p>Treat source files and derived artifacts as the same sensitivity class unless there is a documented declassification process. That includes cached H.264/AAC sources, extracted MP3 audio, transformed Glyph and Pixel streams, reconstructed canvas frames, telemetry, and any retained samples.</p>
+                <p>For a durable public deployment, add the Render persistent disk before relying on uploaded media, keep the production caps enabled, limit upload size and duration, and capture enough telemetry to diagnose mode selection, missing files, decode failures, payload size, dropped frames, and client disconnects.</p>
             </article>
         </div>
     </dialog>

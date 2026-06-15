@@ -4052,8 +4052,13 @@ body::before,
 }
 
 .risk-link {
-    color: var(--rose);
+    color: #171717;
     border-color: #d3c8b8;
+}
+
+.research-actions .info-button,
+.research-actions .risk-link {
+    color: #171717;
 }
 
 .explainer-modal {
