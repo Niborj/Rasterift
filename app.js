@@ -61,6 +61,8 @@ let activeMode = 'ascii';
 const DEMO_DEFAULT_MODE = 'ascii';
 let videoLibrary = [];
 let preparedSelection = null;
+let audioStreamToken = 0;
+let pendingAudioStart = null;
 let throughputVideoId = null;
 let originalSourceRate = 0;
 let rawRgbRate = 0;
@@ -540,12 +542,42 @@ function prepareSelectedMode(selection) {
     statusEl.style.color = 'var(--accent-secondary)';
 }
 
+function resetRasteriftAudio(clearSource = true) {
+    pendingAudioStart = null;
+    if (!audioEl) return;
+    audioEl.pause();
+    if (clearSource) {
+        audioEl.src = '';
+        delete audioEl.dataset.streamToken;
+    }
+}
+
+function primeRasteriftAudio(force = false) {
+    if (!audioEl || activeMode === 'original' || !activeVideoId) {
+        return Promise.resolve(false);
+    }
+
+    const token = `${activeVideoId}:${activeMode}:${audioStreamToken}`;
+    if (force || audioEl.dataset.streamToken !== token || !audioEl.src) {
+        audioEl.pause();
+        audioEl.src = '/audio?' + Date.now();
+        audioEl.dataset.streamToken = token;
+        audioEl.load();
+    }
+
+    audioEl.volume = volumeSlider ? volumeSlider.value : 1.0;
+    pendingAudioStart = audioEl.play()
+        .then(() => true)
+        .catch(() => false);
+    return pendingAudioStart;
+}
+
 function showEmptyLibraryState(message = 'Upload a video to begin') {
     state = 'IDLE';
     preparedSelection = null;
     frameBuffer.length = 0;
     if (ws) { ws.onclose = null; ws.close(); ws = null; }
-    if (audioEl) { audioEl.pause(); audioEl.src = ''; }
+    resetRasteriftAudio();
     hideOriginalSource(true);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     player.textContent = '';
@@ -735,6 +767,9 @@ async function startStream() {
             startOriginalSource(selection);
         } else {
             hideOriginalSource();
+            if (!audioEl || !audioEl.src) {
+                primeRasteriftAudio();
+            }
             overlay.classList.add('hidden');
             connectWebSocket();
         }
@@ -784,8 +819,8 @@ function connectWebSocket() {
     beginThroughputSession(activeMode);
     hideOriginalSource();
 
-    // Audio is loaded later in INIT handler (Audio Ready Gate).
-    // Don't preload here — causes race conditions with vol=0 (204 response).
+    // Audio is primed from the user's click before INIT so browser autoplay
+    // policy does not block transformed-mode audio.
 
     const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
     ws = new WebSocket(`${protocol}//${location.host}/ws?codec=adaptive`);
@@ -822,6 +857,7 @@ function connectWebSocket() {
                 state = 'PLAYING';
 
                 const beginRendering = () => {
+                    if (readyToRender) return;
                     readyToRender = true;
                     streamStartTime = performance.now();
                     lastRenderTime = performance.now();
@@ -830,18 +866,18 @@ function connectWebSocket() {
                 };
 
                 if (audioEl) {
-                    audioEl.pause();
-                    audioEl.src = '/audio?' + Date.now();
                     audioEl.volume = volumeSlider ? volumeSlider.value : 1.0;
-                    audioEl.load();
-                    audioEl.play().catch(() => {});
+                    if (!audioEl.src) primeRasteriftAudio();
 
-                    // Wait for audio to actually start playing
-                    if (audioEl.readyState >= 3) {
+                    // Wait for audio to actually start playing.
+                    if (!audioEl.paused && audioEl.readyState >= 3) {
                         beginRendering();
                     } else {
                         audioEl.addEventListener('playing', beginRendering, { once: true });
-                        // Fallback: if audio fails to load (vol=0 / 204), start after 500ms
+                        audioEl.addEventListener('canplay', () => {
+                            if (!audioEl.paused) beginRendering();
+                        }, { once: true });
+                        // Fallback: if audio fails to load (vol=0 / 204), start after 500ms.
                         setTimeout(() => {
                             if (!readyToRender) beginRendering();
                         }, 500);
@@ -1001,7 +1037,7 @@ function renderFrame(now) {
 function finishStream() {
     state = 'IDLE';
     if (ws) { ws.onclose = null; ws.close(); ws = null; }
-    if (audioEl) { audioEl.pause(); audioEl.src = ''; }
+    resetRasteriftAudio();
     hideOriginalSource();
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     player.textContent = '';
@@ -1077,6 +1113,10 @@ overlay.addEventListener('click', (e) => {
         showEmptyLibraryState();
         if (videoUpload && !videoUpload.disabled) videoUpload.click();
         return;
+    }
+    if (activeMode !== 'original') {
+        audioStreamToken++;
+        primeRasteriftAudio(true);
     }
     startStream();
 });
