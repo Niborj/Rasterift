@@ -4404,3 +4404,27 @@ body::after {
         display: none;
     }
 }
+
+#technical-trigger,
+#risk-card,
+#technical-modal,
+#risk-modal,
+#technical-modal *,
+#risk-modal * {
+    color: #171717;
+}
+
+#technical-modal .rail-original,
+#technical-modal .rail-glyph,
+#technical-modal .rail-pixel,
+#technical-modal .rail-title,
+#technical-modal .diagram-header h3,
+#technical-modal .diagram-kicker,
+#technical-modal .map-node span,
+#technical-modal .rail-step span,
+#technical-modal .map-feedback span,
+#technical-modal .packet-cell span,
+#technical-modal .transform-card span,
+#risk-modal .risk-brief h3 {
+    color: #171717;
+}
