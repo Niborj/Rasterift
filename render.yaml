@@ -8,6 +8,8 @@ services:
     envVars:
       - key: RASTERIFT_DATA_DIR
         value: /data
+      - key: RASTERIFT_DEFAULT_VIDEO
+        value: video.mp4
       - key: RASTERIFT_CODEC_QUALITY
         value: high
       - key: RASTERIFT_MAX_FPS

@@ -52,9 +52,9 @@ Expected health response:
 6. Deploy the service.
 7. Open the service URL after deploy, for example `https://rasterift.onrender.com`.
 8. Confirm `https://YOUR-RENDER-SERVICE.onrender.com/health` returns `{"status":"ok"}`.
-9. Upload a video from the Rasterift UI. New deploys start with an empty library unless you deliberately add a bundled default video.
+9. Open the app and confirm the bundled `video.mp4` appears as the default source. Uploaded videos are still stored under `/data/uploads`.
 
-Optional: set `RASTERIFT_DEFAULT_VIDEO` to a path inside the image or mounted data directory if you want Rasterift to pre-load a default source video. Leave it unset for the normal Render upload-first flow.
+Rasterift sets `RASTERIFT_DEFAULT_VIDEO=video.mp4` on Render so visitors see a preloaded demo. To disable the bundled default later, remove that environment variable or set it to an empty value.
 
 ## Production Playback Tuning
 

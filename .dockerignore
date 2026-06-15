@@ -38,7 +38,6 @@ generate_paper_figures.py
 measure_rasterift.py
 
 # Local test videos and generated media
-video.mp4
 videos/
 measurements/*.mp4
 *.mov
@@ -51,6 +50,7 @@ measurements/*.mp4
 *.WEBM
 *.mp4
 *.MP4
+!video.mp4
 
 # Experiment outputs
 experiments/vectors/

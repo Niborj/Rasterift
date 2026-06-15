@@ -12,6 +12,7 @@ source_cache/
 # Video files (too large for GitHub, user provides their own)
 *.mp4
 *.MP4
+!video.mp4
 *.avi
 *.AVI
 *.mov
