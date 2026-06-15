@@ -8,7 +8,7 @@
     <link rel="icon" href="/static/assets/rasterift-mark.svg?v=human-redesign" type="image/svg+xml">
     <link rel="preload" href="/static/assets/rasterift-mark.svg?v=human-redesign" as="image" type="image/svg+xml">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/style.css?v=rasterift-20260615-modal-contrast">
+    <link rel="stylesheet" href="/static/style.css?v=rasterift-20260615-tldr">
 </head>
 
 <body>
@@ -125,6 +125,32 @@
                     <span role="cell">Frames sampled into a reduced colour grid.</span>
                     <span role="cell">Keeps more visual detail than Glyph, with a larger payload.</span>
                 </div>
+            </div>
+        </section>
+
+        <section class="tldr-section" aria-label="Rasterift TLDR">
+            <div class="tldr-copy">
+                <p class="eyebrow">TL;DR</p>
+                <h2>Rasterift is a representation-boundary demo.</h2>
+                <p>It shows how the same source video changes as it moves from compressed media into sampled frames, Glyph or Pixel WebSocket payloads, reconstructed canvas output, and synced audio.</p>
+            </div>
+            <div class="tldr-grid">
+                <article class="tldr-card">
+                    <span>What does this research prove?</span>
+                    <p>Visual meaning can survive a change in representation. Rasterift preserves recognizable motion while replacing ordinary video playback with browser-rendered application frames, making the inspection boundary measurable.</p>
+                </article>
+                <article class="tldr-card">
+                    <span>Why is it important?</span>
+                    <p>Security and policy systems often reason about one artifact at a time. This demo makes the chain visible: source file, derived frames, transport payloads, rendered canvas, and audio all need to be understood together.</p>
+                </article>
+                <article class="tldr-card">
+                    <span>How can it be weaponised?</span>
+                    <p>At a high level, an attacker could try to move visual information into a form a control does not inspect well, or use expensive transformed streams to pressure resources. The defensive lesson is to cap costs and inspect reconstructed output.</p>
+                </article>
+                <article class="tldr-card">
+                    <span>Can this be used as an obfuscation attack?</span>
+                    <p>Yes, as representation obfuscation. The content is not invisible or encrypted, but it is re-expressed as glyph or cell streams and rebuilt in the browser. Defenses should sample final renderings and preserve provenance across derived artifacts.</p>
+                </article>
             </div>
         </section>
 
