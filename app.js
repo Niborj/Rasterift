@@ -481,7 +481,26 @@ async function selectOnServer() {
         body: JSON.stringify({ video_id: activeVideoId, mode: activeMode }),
     });
     const result = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(result.detail || 'Could not select that video.');
+    if (!response.ok) {
+        const detail = result.detail || 'Could not select that video.';
+        if (response.status === 404 || /video not found/i.test(detail)) {
+            const error = new Error('That uploaded video is no longer available. Upload it again.');
+            error.recovered = true;
+            try {
+                await loadLibrary();
+            } catch (_) {
+                activeVideoId = null;
+                preparedSelection = null;
+            }
+            if (!activeVideoId) {
+                showEmptyLibraryState(error.message);
+            } else {
+                setUploadMessage(error.message, 'error');
+            }
+            throw error;
+        }
+        throw new Error(detail);
+    }
 
     activeVideoId = result.video.id;
     activeMode = result.mode;
@@ -605,6 +624,7 @@ async function chooseVideo(videoId) {
         const selection = await applySelection();
         setUploadMessage(`${selection.video.name} selected`, 'ready');
     } catch (error) {
+        if (error.recovered) return;
         setUploadMessage(error.message, 'error');
         statusEl.textContent = 'Selection Error';
         statusEl.style.color = '#ff4d4d';
@@ -624,6 +644,7 @@ async function chooseMode(mode) {
     try {
         await applySelection();
     } catch (error) {
+        if (error.recovered) return;
         setUploadMessage(error.message, 'error');
         statusEl.textContent = 'Mode Error';
         statusEl.style.color = '#ff4d4d';
@@ -774,6 +795,7 @@ async function startStream() {
             connectWebSocket();
         }
     } catch (error) {
+        if (error.recovered) return;
         statusEl.textContent = error.message;
         statusEl.style.color = '#ff4d4d';
         overlay.classList.remove('hidden');

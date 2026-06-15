@@ -551,9 +551,17 @@ async def health():
 @app.get("/videos")
 async def videos():
     """Return the startup source plus uploaded videos available in the UI."""
+    library = list_video_library()
+    active_id = getattr(app.state, "active_video_id", None)
+    if active_id and not any(item["id"] == active_id for item in library):
+        active_id = library[0]["id"] if library else None
+        app.state.active_video_id = active_id
+        if active_id is None:
+            app.state.queue = []
+            app.state.current_index = 0
     return {
-        "videos": list_video_library(),
-        "active_id": getattr(app.state, "active_video_id", None),
+        "videos": library,
+        "active_id": active_id,
         "mode": getattr(app.state, "ui_render_mode", "ascii"),
     }
 
