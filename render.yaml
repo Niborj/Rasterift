@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: rasterift
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: RASTERIFT_DATA_DIR
+        value: /data

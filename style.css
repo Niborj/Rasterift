@@ -980,8 +980,7 @@ label {
     font-weight: 600;
 }
 
-.video-meta,
-.video-empty {
+.video-meta {
     color: #aeb8c6;
     font-size: 10px;
 }
@@ -1019,8 +1018,44 @@ label {
 }
 
 .video-empty {
-    padding: 16px;
-    background: var(--panel);
+    display: grid;
+    gap: 10px;
+    min-height: 178px;
+    place-items: center;
+    padding: 18px;
+    border: 1px dashed rgba(53, 213, 255, 0.36);
+    border-radius: 10px;
+    color: #aeb8c6;
+    background:
+        linear-gradient(135deg, rgba(53, 213, 255, 0.08), rgba(125, 255, 146, 0.04)),
+        var(--panel);
+    text-align: center;
+}
+
+.video-empty strong {
+    color: var(--text);
+    font-size: 13px;
+}
+
+.video-empty span {
+    max-width: 220px;
+    font-size: 11px;
+    line-height: 1.45;
+}
+
+.empty-upload-choice {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 32px;
+    padding: 0 12px;
+    border: 1px solid rgba(53, 213, 255, 0.44);
+    border-radius: 6px;
+    color: var(--cyan);
+    background: rgba(53, 213, 255, 0.08);
+    cursor: pointer;
+    font-size: 10px;
+    text-transform: uppercase;
 }
 
 .explainer-modal {

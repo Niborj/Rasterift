@@ -1,0 +1,58 @@
+.git
+.gitignore
+.DS_Store
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local runtime state
+uploads/
+.source_cache/
+source_cache/
+
+# Manuscript source and LaTeX build files
+*.tex
+*.aux
+*.out
+*.log
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+rasterift-latex-source.zip
+rasterift-paper-editable.*
+rasterift-paper-rendered.pdf
+textideo-paper-editable.*
+build_paper_*.py
+generate_paper_figures.py
+measure_rasterift.py
+
+# Local test videos and generated media
+video.mp4
+videos/
+measurements/*.mp4
+*.mov
+*.MOV
+*.mkv
+*.MKV
+*.avi
+*.AVI
+*.webm
+*.WEBM
+*.mp4
+*.MP4
+
+# Experiment outputs
+experiments/vectors/
+experiments/*.png
+experiments/autobahn/reports/

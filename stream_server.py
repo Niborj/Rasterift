@@ -21,7 +21,7 @@ import cv2
 from pathlib import Path
 from urllib.parse import quote
 from fastapi import Body, FastAPI, File, HTTPException, UploadFile, WebSocket, WebSocketDisconnect
-from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
+from fastapi.responses import FileResponse, HTMLResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 import uvicorn
 import os
@@ -59,9 +59,20 @@ def calc_auto_rows(cols: int, vid_w: int, vid_h: int, pixel_mode: bool) -> int:
 
 # Serve static files (style.css, app.js) from the project directory
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
-SOURCE_CACHE_DIR = os.path.join(BASE_DIR, ".source_cache")
+DATA_DIR = Path(os.environ.get("RASTERIFT_DATA_DIR", BASE_DIR)).expanduser().resolve()
+UPLOAD_DIR = DATA_DIR / "uploads"
+SOURCE_CACHE_DIR = DATA_DIR / "source_cache"
 SUPPORTED_UPLOAD_EXTENSIONS = {".mp4", ".mkv", ".avi", ".mov", ".webm"}
+QUALITY_TOLERANCES = {"lossless": 0, "high": 4, "balanced": 8, "low": 16}
+
+
+def ensure_storage_dirs() -> None:
+    """Create runtime storage paths for uploads and browser-safe transcodes."""
+    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+    SOURCE_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
+
+ensure_storage_dirs()
 
 
 class RasteriftStaticFiles(StaticFiles):
@@ -84,6 +95,75 @@ class RasteriftStaticFiles(StaticFiles):
 
 
 app.mount("/static", RasteriftStaticFiles(directory=BASE_DIR), name="static")
+
+
+def initialize_app_state(
+    queue: list[dict] | None = None,
+    *,
+    loop: bool = False,
+    tolerance: int = 0,
+    debug: bool = False,
+    cols: int | None = None,
+    rows: int = 0,
+    mode: int = 5,
+    vol: int = 1,
+    pixel: bool = False,
+    ui_render_mode: str | None = None,
+) -> list[dict]:
+    """
+    Populate app.state for either the interactive CLI or the production entrypoint.
+    The production server passes an empty queue when no bundled default video exists.
+    """
+    ensure_storage_dirs()
+    playback_queue = [entry.copy() for entry in (queue or [])]
+    global_default_cols = cols if cols is not None else (450 if pixel else 200)
+
+    app.state.queue = playback_queue
+    app.state.startup_queue = [entry.copy() for entry in playback_queue]
+    app.state.current_index = 0
+    app.state.loop = loop
+    app.state.tolerance = tolerance
+    app.state.debug = debug
+    app.state.cols = global_default_cols
+    app.state.rows = rows
+    app.state.default_mode = mode
+    app.state.default_vol = vol
+    app.state.default_pixel = pixel
+    app.state.default_text_cols = cols if cols is not None else 200
+    app.state.default_pixel_cols = cols if cols is not None else 450
+    app.state.active_video_id = "startup:0" if playback_queue else None
+    app.state.ui_render_mode = ui_render_mode or ("pixel" if pixel else "ascii")
+    app.state.data_dir = str(DATA_DIR)
+    app.state.upload_dir = str(UPLOAD_DIR)
+    app.state.source_cache_dir = str(SOURCE_CACHE_DIR)
+    return playback_queue
+
+
+def build_default_queue(
+    video: str = "video.mp4",
+    *,
+    mode: int = 5,
+    vol: int = 1,
+    pixel: bool = False,
+    cols: int | None = None,
+    rows: int = 0,
+) -> list[dict]:
+    """Build a one-item queue only if the default video is actually present."""
+    resolved = Path(resolve_video_path(video))
+    if not resolved.is_absolute():
+        resolved = Path(BASE_DIR) / resolved
+    if not resolved.exists():
+        return []
+
+    default_cols = cols if cols is not None else (450 if pixel else 200)
+    return [{
+        "video": str(resolved),
+        "mode": mode,
+        "vol": vol,
+        "pixel": pixel,
+        "cols": default_cols,
+        "rows": rows,
+    }]
 
 
 def safe_upload_path(filename: str) -> Path:
@@ -422,12 +502,18 @@ async def root():
     return HTMLResponse(get_html_content())
 
 
+@app.get("/health")
+async def health():
+    """Render health check endpoint."""
+    return {"status": "ok"}
+
+
 @app.get("/videos")
 async def videos():
     """Return the startup source plus uploaded videos available in the UI."""
     return {
         "videos": list_video_library(),
-        "active_id": getattr(app.state, "active_video_id", "startup:0"),
+        "active_id": getattr(app.state, "active_video_id", None),
         "mode": getattr(app.state, "ui_render_mode", "ascii"),
     }
 
@@ -459,7 +545,7 @@ async def delete_video(payload: dict = Body(...)):
     return {
         "deleted_id": video_id,
         "videos": list_video_library(),
-        "active_id": getattr(app.state, "active_video_id", "startup:0"),
+        "active_id": getattr(app.state, "active_video_id", None),
         "mode": getattr(app.state, "ui_render_mode", "ascii"),
     }
 
@@ -547,18 +633,19 @@ async def audio_stream():
     """
     queue = getattr(app.state, "queue", [])
     idx   = getattr(app.state, "current_index", 0)
-    entry = queue[idx] if queue else {}
+    if not queue or idx < 0 or idx >= len(queue):
+        return Response(status_code=204)
+
+    entry = queue[idx]
 
     vol_level  = entry.get("vol", 1)
     video_path = entry.get("video", "video.mp4")
 
     # vol 0 → skip audio entirely, no FFmpeg process
     if vol_level <= 0:
-        from fastapi import Response
         return Response(status_code=204)
 
     if not os.path.exists(video_path):
-        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Video file not found")
 
     # Map 1-5 → 1.0x-2.0x FFmpeg volume
@@ -987,22 +1074,18 @@ if __name__ == "__main__":
         exit(1)
 
     # Save state
-    app.state.queue         = queue
-    app.state.startup_queue = [entry.copy() for entry in queue]
-    app.state.current_index = 0
-    app.state.loop          = args.loop
-    app.state.tolerance     = {"lossless": 0, "high": 4, "balanced": 8, "low": 16}[args.quality]
-    app.state.debug         = args.debug
-    global_default_cols     = args.cols if args.cols is not None else (450 if args.pixel else 200)
-    app.state.cols          = global_default_cols
-    app.state.rows          = args.rows
-    app.state.default_mode  = args.mode
-    app.state.default_vol   = args.vol
-    app.state.default_pixel = args.pixel
-    app.state.default_text_cols = args.cols if args.cols is not None else 200
-    app.state.default_pixel_cols = args.cols if args.cols is not None else 450
-    app.state.active_video_id = "startup:0"
-    app.state.ui_render_mode = "pixel" if args.pixel else "ascii"
+    queue = initialize_app_state(
+        queue,
+        loop=args.loop,
+        tolerance=QUALITY_TOLERANCES[args.quality],
+        debug=args.debug,
+        cols=args.cols,
+        rows=args.rows,
+        mode=args.mode,
+        vol=args.vol,
+        pixel=args.pixel,
+    )
+    global_default_cols = app.state.cols
 
     # ── High FPS Warning ──
     high_fps_videos = []

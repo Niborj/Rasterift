@@ -339,6 +339,7 @@ function recordStreamBytes(mode, bytes) {
 }
 
 function currentPlayLabel() {
+    if (!activeVideo()) return 'Upload a video to start';
     if (activeMode === 'original') return 'Play Rasterift Original';
     if (activeMode === 'pixel') return 'Play Rasterift Pixel';
     return 'Play Rasterift Glyph';
@@ -386,7 +387,15 @@ function renderLibrary() {
     if (videoLibrary.length === 0) {
         const empty = document.createElement('div');
         empty.className = 'video-empty';
-        empty.textContent = 'No videos loaded';
+        const title = document.createElement('strong');
+        title.textContent = 'Upload a video to begin';
+        const copy = document.createElement('span');
+        copy.textContent = 'MP4, WebM, MOV, MKV, and AVI files will appear here.';
+        const upload = document.createElement('label');
+        upload.className = 'empty-upload-choice';
+        upload.htmlFor = 'video-upload';
+        upload.textContent = 'Choose video files';
+        empty.append(title, copy, upload);
         videoList.appendChild(empty);
         updateActiveSummary();
         return;
@@ -452,13 +461,17 @@ async function loadLibrary(preferredId = null) {
     if (activeVideoId && !videoLibrary.some((video) => video.id === activeVideoId)) {
         activeVideoId = videoLibrary[0] && videoLibrary[0].id;
     }
+    if (videoLibrary.length === 0) {
+        activeVideoId = null;
+        preparedSelection = null;
+    }
 
     setModeButtons();
     renderLibrary();
 }
 
 async function selectOnServer() {
-    if (!activeVideoId) throw new Error('Choose a video first.');
+    if (!activeVideoId) throw new Error('Upload a video to start Rasterift.');
 
     const response = await fetch('/select', {
         method: 'POST',
@@ -527,6 +540,25 @@ function prepareSelectedMode(selection) {
     statusEl.style.color = 'var(--accent-secondary)';
 }
 
+function showEmptyLibraryState(message = 'Upload a video to begin') {
+    state = 'IDLE';
+    preparedSelection = null;
+    frameBuffer.length = 0;
+    if (ws) { ws.onclose = null; ws.close(); ws = null; }
+    if (audioEl) { audioEl.pause(); audioEl.src = ''; }
+    hideOriginalSource(true);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    player.textContent = '';
+    player.style.display = 'none';
+    canvas.style.display = 'none';
+    overlay.classList.remove('hidden');
+    setOverlayLabel('Upload a video to start');
+    statusEl.textContent = message;
+    statusEl.style.color = 'var(--accent-color)';
+    setUploadMessage('Choose a video file to start Rasterift.', 'idle');
+    updateActiveSummary();
+}
+
 async function applySelection() {
     const selection = await selectOnServer();
     prepareSelectedMode(selection);
@@ -553,6 +585,10 @@ async function chooseMode(mode) {
     finishStream();
     activeMode = mode;
     setModeButtons();
+    if (!activeVideoId) {
+        showEmptyLibraryState();
+        return;
+    }
     try {
         await applySelection();
     } catch (error) {
@@ -586,6 +622,11 @@ async function deleteVideo(videoId, name) {
         activeMode = result.mode || activeMode;
         setModeButtons();
         renderLibrary();
+        if (!activeVideoId) {
+            showEmptyLibraryState(`${name} deleted`);
+            setUploadMessage(`${name} deleted / upload a video to continue`, 'ready');
+            return;
+        }
         const selection = await applySelection();
         setUploadMessage(`${name} deleted`, 'ready');
         statusEl.textContent = selection.mode === 'pixel' ? 'Rasterift Pixel Ready' : selection.mode === 'original' ? 'Rasterift Original Ready' : 'Rasterift Glyph Ready';
@@ -680,6 +721,11 @@ function buildCanvas(cols, rows) {
 
 async function startStream() {
     if (state !== 'IDLE') return;
+    if (!activeVideoId) {
+        showEmptyLibraryState();
+        if (videoUpload && !videoUpload.disabled) videoUpload.click();
+        return;
+    }
     statusEl.textContent = 'Connecting...';
     statusEl.style.color = 'var(--accent-color)';
 
@@ -1027,6 +1073,11 @@ async function uploadVideos(files) {
 // ── EVENT LISTENERS ──
 overlay.addEventListener('click', (e) => {
     e.stopPropagation();
+    if (!activeVideoId) {
+        showEmptyLibraryState();
+        if (videoUpload && !videoUpload.disabled) videoUpload.click();
+        return;
+    }
     startStream();
 });
 
@@ -1111,6 +1162,10 @@ loadLibrary()
     .then(() => {
         activeMode = DEMO_DEFAULT_MODE;
         setModeButtons();
+        if (!activeVideoId) {
+            showEmptyLibraryState();
+            return null;
+        }
         return applySelection();
     })
     .catch((error) => {
